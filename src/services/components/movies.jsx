@@ -3,11 +3,14 @@ import React, { Component } from 'react';
 import { getMovies } from "../../services/fakeMovieService";
 import Like from '../../common/like';
 import Pagination from './pagination';
+import { indexOf } from 'lodash';
+import {paginate} from '../../utils/paginate';
 
 class Movies extends Component {
   state = {
     movies: getMovies(),
     count: getMovies().length,
+      currentPage:1,
     pageSize: 4,
   };
   handleLike=(movie)=>{
@@ -18,7 +21,9 @@ class Movies extends Component {
   this.setState({movies});
   }
 
-  handlePageChange=page=>{console.log(page);}
+  handlePageChange=page=>{
+    this.setState({currentPage:page});
+  }
 
   handleDecrement = () => {
     this.setState(this.state.movies.splice(0, 1));
@@ -26,6 +31,11 @@ class Movies extends Component {
   };
 
   render() {
+    const{length:count}= this.state.movies;  
+    const{pageSize,currentPage,movies:allMovies}=this.state;
+      if (count===0) return <p>there are no movies in database</p>
+    const movies = paginate(allMovies,currentPage, pageSize);
+
     return (
       <main className="container">
         <p>we have {this.state.count} movies</p>
@@ -41,7 +51,7 @@ class Movies extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.movies.map((movie) => (
+            {movies.map((movie) => (
               <tr>
                 <td> {movie.title}</td>
                 <td>{movie.genre.name}</td>
@@ -60,7 +70,9 @@ class Movies extends Component {
             ))}
           </tbody>
         </table>
-        <Pagination onPageChange={this.handlePageChange} itemsCount = {this.state.movies.length} pageSize = {this.state.pageSize}/>
+        <Pagination onPageChange={this.handlePageChange}
+        currentPage = {currentPage}
+        itemsCount = {this.state.movies.length} pageSize = {pageSize}/>
 
       </main>
     );
